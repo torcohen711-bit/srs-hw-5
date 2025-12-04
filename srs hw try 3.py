@@ -30,7 +30,26 @@ print(predictions.head())
 r2 = r2_score(y_test, y_pred)
 print(f"R-squared score: {r2}")
 
-kf = KFold(n_splits= 100, shuffle=True, random_state=42)
+loo = LeaveOneOut()
+loo_errors = []
+
+for train_idx, val_idx in loo.split(x):
+    x_train_loo, x_val_loo = x.iloc[train_idx], x.iloc[val_idx]
+    y_train_loo, y_val_loo = y.iloc[train_idx], y.iloc[val_idx]
+
+    model_loo = LinearRegression()
+    model_loo.fit(x_train_loo, y_train_loo)
+
+    pred = model_loo.predict(x_val_loo)
+    loo_errors.append((y_val_loo.values[0] - pred[0]) ** 2)
+
+loo_mse = np.mean(loo_errors)
+loo_rmse = np.sqrt(loo_mse)
+
+print(f"LOOCV MSE: {loo_mse:.4f}")
+print(f"LOOCV RMSE: {loo_rmse:.4f}")
+
+kf = KFold(n_splits= 10, shuffle=True, random_state=42)
 
 kf = LeaveOneOut()
 kf_errors = []
